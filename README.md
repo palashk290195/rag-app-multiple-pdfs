@@ -12,6 +12,8 @@ This RAG (Retrieval-Augmented Generation) Chat Application is a Flask-based web 
 - Display of source references with context for each answer
 - Continuous chat history
 - OpenAI API key management through the UI
+![image](https://github.com/user-attachments/assets/a015eb42-67d8-43cc-b29d-633fe47b1552)
+
 
 ## Prerequisites
 
@@ -71,6 +73,4 @@ This RAG (Retrieval-Augmented Generation) Chat Application is a Flask-based web 
 
 Contributions to improve the RAG Chat Application are welcome. Please feel free to submit a Pull Request.
 
-## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
