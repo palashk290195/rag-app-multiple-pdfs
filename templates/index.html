@@ -1,0 +1,164 @@
+"""
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAG Chat Application</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .loader {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            display: none;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-md">
+        <h1 class="text-2xl font-bold mb-6">RAG Chat Application</h1>
+        
+        <div class="mb-6">
+            <h2 class="text-xl font-semibold mb-2">Set OpenAI API Key</h2>
+            <input type="password" id="apiKeyInput" placeholder="Enter your OpenAI API key" class="w-full p-2 border rounded mb-2">
+            <button onclick="setApiKey()" class="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600">Set API Key</button>
+        </div>
+        
+        <div class="mb-6">
+            <h2 class="text-xl font-semibold mb-2">Upload PDF Documents</h2>
+            <input type="file" id="fileInput" multiple accept=".pdf" class="mb-2">
+            <button onclick="uploadFiles()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Upload</button>
+            <div id="uploadLoader" class="loader mt-2"></div>
+        </div>
+        
+        <div class="mb-6">
+            <h2 class="text-xl font-semibold mb-2">Chat</h2>
+            <div id="chatHistory" class="border p-4 mb-4 h-64 overflow-y-auto"></div>
+            <input type="text" id="questionInput" placeholder="Enter your question" class="w-full p-2 border rounded mb-2">
+            <div class="flex items-center mb-2">
+                <input type="checkbox" id="strictPdfCheck" class="mr-2">
+                <label for="strictPdfCheck">Strictly answer from PDFs</label>
+            </div>
+            <button onclick="askQuestion()" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Ask</button>
+            <button onclick="clearHistory()" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 ml-2">Clear History</button>
+            <div id="askLoader" class="loader mt-2"></div>
+        </div>
+        
+        <div id="answer" class="mb-6"></div>
+        
+        <div id="sources"></div>
+    </div>
+
+    <script>
+        async function setApiKey() {
+            const apiKey = document.getElementById('apiKeyInput').value;
+            try {
+                const response = await fetch('/set_api_key', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({api_key: apiKey})
+                });
+                const result = await response.json();
+                alert(result.message);
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred while setting the API key');
+            }
+        }
+
+        async function uploadFiles() {
+            const fileInput = document.getElementById('fileInput');
+            const formData = new FormData();
+            
+            for (const file of fileInput.files) {
+                formData.append('file', file);
+            }
+            
+            try {
+                document.getElementById('uploadLoader').style.display = 'block';
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await response.json();
+                alert(result.message);
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred while uploading files');
+            } finally {
+                document.getElementById('uploadLoader').style.display = 'none';
+            }
+        }
+
+        async function askQuestion() {
+            const question = document.getElementById('questionInput').value;
+            const strictPdf = document.getElementById('strictPdfCheck').checked;
+            try {
+                document.getElementById('askLoader').style.display = 'block';
+                const response = await fetch('/ask', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({question: question, strict_pdf: strictPdf})
+                });
+                const result = await response.json();
+                updateChatHistory(question, result.answer);
+                displaySources(result.sources);
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred while asking the question');
+            } finally {
+                document.getElementById('askLoader').style.display = 'none';
+                document.getElementById('questionInput').value = '';
+            }
+        }
+
+        function updateChatHistory(question, answer) {
+            const chatHistory = document.getElementById('chatHistory');
+            chatHistory.innerHTML += `<p><strong>You:</strong> ${question}</p>`;
+            chatHistory.innerHTML += `<p><strong>AI:</strong> ${answer}</p>`;
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+
+        function displaySources(sources) {
+            const sourcesDiv = document.getElementById('sources');
+            sourcesDiv.innerHTML = '<h3 class="font-bold">Sources:</h3>';
+            sources.forEach(source => {
+                sourcesDiv.innerHTML += `
+                    <div class="mt-2">
+                        <p><strong>${source.source}</strong> (Page ${source.page}, Chunk ${source.chunk})</p>
+                        <p class="text-sm text-gray-600">${source.context}</p>
+                    </div>
+                `;
+            });
+        }
+
+        async function clearHistory() {
+            try {
+                const response = await fetch('/clear_history', {
+                    method: 'POST'
+                });
+                const result = await response.json();
+                document.getElementById('chatHistory').innerHTML = '';
+                document.getElementById('sources').innerHTML = '';
+                alert(result.message);
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred while clearing the chat history');
+            }
+        }
+    </script>
+</body>
+</html>
+"""
