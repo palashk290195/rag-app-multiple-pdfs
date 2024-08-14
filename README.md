@@ -25,8 +25,8 @@ This RAG (Retrieval-Augmented Generation) Chat Application is a Flask-based web 
 
 1. Clone the repository:
    ```
-   git clone https://github.com/your-username/rag-chat-app.git
-   cd rag-chat-app
+   git clone https://github.com/palashk290195/rag-app-multiple-pdfs.git
+   cd rag-app-multiple-pdfs
    ```
 
 2. Create and activate a virtual environment:
